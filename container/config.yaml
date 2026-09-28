@@ -1,0 +1,47 @@
+# AOS-Drones-PoC Container — AosEdge Update Bundle configuration (schemaVersion: 2)
+# Format follows https://github.com/aosedge/hello-world (config.yaml)
+# Documentation: https://docs.aosedge.tech/docs/reference/file-formats/service-config
+#
+# Sign and upload (as Service Provider):  scripts\sign-and-upload.ps1
+#
+# NOTE: <HOST_IP> in "cmd" is the Windows host as seen from inside the AosVM
+# (CARLA-Air AirSim :41451 and the Container backend :8080 both run there).
+# With VirtualBox NAT this is usually 10.0.2.2 — verify it on the unit with
+# `ip route` (default gateway) before uploading; see README.md, "AosVM networking".
+
+schemaVersion: 2
+
+publisher:
+  author: "Andrii Burachynskyi"
+  company: "EPAM Systems"
+
+publish:
+  tlsKey: "aos-user-sp.p12"
+  # domain: "aoscloud.io"   # optional: taken from the tlsKey certificate if omitted
+
+items:
+  - identity:
+      type: "service"
+      codename: "aos-drones-poc-container"
+      title: "AOS Drones PoC Container"
+      description: "Reads drone coordinates from CARLA-Air (AirSim RPC), prints them and sends telemetry to the Container backend"
+    version: "0.1.0"
+    sourceFolder: "drone-telemetry"
+
+    images:
+      - sourceFolder: "src_any"
+        archInfo:
+          architecture: "any"
+
+    configuration:
+      workingDir: "/"
+      cmd: /usr/bin/python3 -u main.py --airsim-host 10.0.2.2 --backend-url http://10.0.2.2:8080/telemetry --drone-id drone-aosvm-01
+      instances:
+        minInstances: 1
+        priority: 10
+      quotas:
+        cpuLimit: 5000
+        ramLimit: 128MiB
+        storageLimit: 16MiB
+        stateLimit: 1MiB
+        tmpLimit: 64MiB
